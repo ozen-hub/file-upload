@@ -1,11 +1,13 @@
 package com.example.fileupload.fileupload.api;
 
+import com.amazonaws.services.s3.model.ObjectListing;
 import com.example.fileupload.fileupload.service.FileService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 
 @RestController
@@ -32,5 +34,15 @@ public class FileController {
             @RequestParam String directory,
             @RequestParam String fileName) throws IOException {
         return fileService.deleteFile(directory, fileName);
+    }
+    @GetMapping(value = "/download", params = {"directory", "fileName"})
+    public byte[] downloadFile(
+            @RequestParam String directory,
+            @RequestParam String fileName) throws IOException {
+        return fileService.downloadFile(directory, fileName);
+    }
+    @GetMapping(value = "/list")
+    public ObjectListing list() throws IOException {
+        return fileService.allFiles();
     }
 }

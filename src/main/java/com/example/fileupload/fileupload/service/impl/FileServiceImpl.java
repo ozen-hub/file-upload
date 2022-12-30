@@ -2,10 +2,8 @@ package com.example.fileupload.fileupload.service.impl;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.PutObjectResult;
+import com.amazonaws.services.s3.model.*;
+import com.amazonaws.util.IOUtils;
 import com.example.fileupload.fileupload.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +19,7 @@ public class FileServiceImpl implements FileService {
     private final AmazonS3 s3;
     private final AmazonS3Client s3Client;
 
-    @Value("bucket")
+    @Value("${bucket}")
     private String bucket;
 
     @Autowired
@@ -36,10 +34,10 @@ public class FileServiceImpl implements FileService {
                                               String user, int randomId) throws IOException {
         String finalizedDirectory = user+"/"+directory;
         String originalFilename = file.getOriginalFilename();
-        String renamedFilename = randomId+file.getOriginalFilename(); // 2344abc.jpg
+        String renamedFilename = randomId+"-"+file.getOriginalFilename(); // 2344-abc.jpg
         PutObjectResult putObjectResult = s3Client.putObject(
                 new PutObjectRequest(bucket, finalizedDirectory + renamedFilename, file.getInputStream(),
-                        new ObjectMetadata()).withCannedAcl(CannedAccessControlList.PublicRead));
+                         new ObjectMetadata()).withCannedAcl(CannedAccessControlList.PublicRead));
         HashMap<String, Object> hMap = new HashMap<>();
         hMap.put("hash", putObjectResult.getContentMd5());
         hMap.put("resource", s3Client.getResourceUrl(bucket, finalizedDirectory  + renamedFilename));
@@ -54,5 +52,17 @@ public class FileServiceImpl implements FileService {
     public boolean deleteFile(String directory, String fileName) throws IOException {
         s3Client.deleteObject(bucket,directory+fileName);
         return true;
+    }
+
+    @Override
+    public byte[] downloadFile(String directory, String fileName) throws IOException {
+        S3Object object = s3.getObject(bucket, directory+fileName);
+        S3ObjectInputStream objectInputStream = object.getObjectContent();
+        return IOUtils.toByteArray(objectInputStream);
+    }
+
+    @Override
+    public ObjectListing allFiles() throws IOException {
+        return  s3.listObjects(bucket);
     }
 }
