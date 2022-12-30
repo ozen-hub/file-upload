@@ -32,16 +32,20 @@ public class FileServiceImpl implements FileService {
 
 
     @Override
-    public HashMap<String, Object> createFile(MultipartFile file) throws IOException {
-        String directory = "sample/resource";
-
+    public HashMap<String, Object> createFile(MultipartFile file, String directory/*abc/sample/*/,
+                                              String user, int randomId) throws IOException {
+        String finalizedDirectory = user+directory;
         String originalFilename = file.getOriginalFilename();
+        String renamedFilename = randomId+file.getOriginalFilename(); // 2344abc.jpg
         PutObjectResult putObjectResult = s3Client.putObject(
-                new PutObjectRequest(bucket, directory + "/" + originalFilename, file.getInputStream(),
+                new PutObjectRequest(bucket, finalizedDirectory + renamedFilename, file.getInputStream(),
                         new ObjectMetadata()).withCannedAcl(CannedAccessControlList.PublicRead));
         HashMap<String, Object> hMap = new HashMap<>();
         hMap.put("hash", putObjectResult.getContentMd5());
-        hMap.put("resource", s3Client.getResourceUrl(bucket, directory + "/" + originalFilename));
+        hMap.put("resource", s3Client.getResourceUrl(bucket, finalizedDirectory  + renamedFilename));
+        hMap.put("directory", finalizedDirectory);
+        hMap.put("renamedFile", renamedFilename);
+        hMap.put("originalFile", originalFilename);
 
         return hMap;
     }

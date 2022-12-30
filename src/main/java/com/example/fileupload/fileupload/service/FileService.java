@@ -6,5 +6,5 @@ import java.io.IOException;
 import java.util.HashMap;
 
 public interface FileService {
-    public HashMap<String,Object> createFile(MultipartFile file) throws IOException;
+    public HashMap<String,Object> createFile(MultipartFile file, String directory, String user, int randomId) throws IOException;
 }
