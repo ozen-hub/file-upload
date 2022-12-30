@@ -21,7 +21,7 @@ public class FileController {
         this.fileService = fileService;
     }
 
-    @PostMapping("/create")
+    @PostMapping(value = "/create", params = {"directory","user"})
     public HashMap<String, Object> createFile(
             @RequestParam("file") MultipartFile file,
             @RequestParam String directory,

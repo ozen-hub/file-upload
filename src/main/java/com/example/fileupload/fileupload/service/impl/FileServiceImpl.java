@@ -34,7 +34,7 @@ public class FileServiceImpl implements FileService {
     @Override
     public HashMap<String, Object> createFile(MultipartFile file, String directory/*abc/sample/*/,
                                               String user, int randomId) throws IOException {
-        String finalizedDirectory = user+directory;
+        String finalizedDirectory = user+"/"+directory;
         String originalFilename = file.getOriginalFilename();
         String renamedFilename = randomId+file.getOriginalFilename(); // 2344abc.jpg
         PutObjectResult putObjectResult = s3Client.putObject(
@@ -48,5 +48,11 @@ public class FileServiceImpl implements FileService {
         hMap.put("originalFile", originalFilename);
 
         return hMap;
+    }
+
+    @Override
+    public boolean deleteFile(String directory, String fileName) throws IOException {
+        s3Client.deleteObject(bucket,directory+fileName);
+        return true;
     }
 }
